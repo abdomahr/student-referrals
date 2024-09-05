@@ -11,8 +11,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Validation\Rules\Unique;
 
 class UserResource extends Resource
 {
@@ -25,41 +23,47 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
+                                          ->required()
+                                          ->maxLength(255),
                 Forms\Components\TextInput::make('phone')
-                    ->tel()
-                    ->maxLength(255),
+                                          ->maxLength(255),
                 Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->maxLength(255),
+                                          ->dehydrated(function ($operation) {
+                                              return $operation === 'create';
+                                          })
+                                          ->password()
+                                          ->required(function ($operation) {
+                                              return $operation === 'create';
+                                          })
+                                          ->maxLength(255),
                 Forms\Components\TextInput::make('code')
-                    ->default((rand('1111', '9999')))
-                    ->unique()
-                
-                  
+                                          ->numeric()
+                                          ->default(random_int(1000, 10000))
+                                          ->unique(ignoreRecord: true),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->where('id', '!=', 1);
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                                         ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
-                    ->searchable(),
+                                         ->searchable(),
                 Tables\Columns\TextColumn::make('code')
-                    ->searchable(),
+                                         ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                                         ->dateTime()
+                                         ->sortable()
+                                         ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                                         ->dateTime()
+                                         ->sortable()
+                                         ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
@@ -89,14 +93,4 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
-
-    public static function update(){
-
-        if(request()->has('password')->$table->dropUnique('users_email_unique');){
-
-        }
-
-    }
-
-
 }

@@ -27,7 +27,6 @@ class InstructorResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('phone')
-                    ->tel()
                     ->required()
                     ->maxLength(255),
             ]);
